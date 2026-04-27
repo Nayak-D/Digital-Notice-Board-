@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { Bell, Eye, EyeOff, Lock, Mail, Sparkles } from 'lucide-react';
+import { Bell, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authService } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
