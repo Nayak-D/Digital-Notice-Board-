@@ -26,13 +26,61 @@ const register = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, mode } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Email and password are required.' });
   }
 
-  // Get user with password
+  // Define allowed admin emails
+  const allowedAdminEmails = [
+    'nayak@gmail.com',
+    'akhil@gmail.com',
+    'jilan@gmail.com',
+    'trinadh@gmail.com'
+  ];
+
+  // If admin login attempt
+  if (mode === 'admin') {
+    // Check if email is in allowed admin list
+    if (!allowedAdminEmails.includes(email.toLowerCase())) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials. This email is not authorized as admin.' });
+    }
+
+    // Check if password matches admin password
+    if (password !== 'admin@123') {
+      return res.status(401).json({ success: false, message: 'Invalid credentials. Incorrect password.' });
+    }
+
+    // Check if user exists in database
+    let user = await User.findOne({ email: email.toLowerCase() });
+
+    // If user doesn't exist, create them as admin
+    if (!user) {
+      user = await User.create({
+        name: email.split('@')[0],
+        email: email.toLowerCase(),
+        password: password,
+        role: 'admin'
+      });
+    } else if (user.role !== 'admin') {
+      // Update role to admin if they exist but aren't admin
+      user.role = 'admin';
+      await user.save();
+    }
+
+    const token = generateToken(user._id);
+    const userObj = user.toJSON();
+
+    return res.status(200).json({
+      success: true,
+      message: `Welcome back, ${user.name}!`,
+      data: { user: userObj, token },
+    });
+  }
+
+  // Student login - default behavior
+  // Allow only student@gmail.com for demo, or use any registered student
   const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
   if (!user || !user.isActive) {

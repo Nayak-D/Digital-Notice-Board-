@@ -78,6 +78,7 @@ export interface AuthState {
 export interface LoginDto {
   email: string;
   password: string;
+  mode?: 'student' | 'admin';
 }
 
 export interface ApiResponse<T> {

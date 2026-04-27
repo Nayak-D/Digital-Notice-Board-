@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { Bell, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Bell, Eye, EyeOff, Lock, Mail, LogIn, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authService } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
@@ -20,21 +20,27 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginMode, setLoginMode] = useState<'student' | 'admin'>('student');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
   });
 
   if (isAuthenticated) return <Navigate to="/admin" replace />;
 
+  const handleModeChange = (mode: 'student' | 'admin') => {
+    setLoginMode(mode);
+    reset({ email: '', password: '' });
+  };
+
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      const res = await authService.login(data);
+      const res = await authService.login({ ...data, mode: loginMode });
       setAuth(res.user, res.token);
       toast.success(`Welcome back, ${res.user.name}!`);
-      navigate('/admin');
+      navigate(res.user.role === 'admin' ? '/admin' : '/');
     } catch (err: any) {
       if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
         // interceptor already showed the toast
@@ -82,10 +88,36 @@ export function LoginPage() {
               <Bell size={30} className="text-white" />
             </motion.div>
             <h1 className="text-2xl font-bold text-white mb-1">Welcome Back</h1>
-            <p className="text-white/50 text-sm">Sign in to the Admin Portal</p>
+            <p className="text-white/50 text-sm">Sign in to Digital Notice Board</p>
           </div>
 
-
+          {/* Login Mode Toggle */}
+          <div className="flex gap-2 mb-8 bg-white/5 p-1 rounded-lg border border-white/10">
+            <motion.button
+              type="button"
+              onClick={() => handleModeChange('student')}
+              whileTap={{ scale: 0.98 }}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-2 ${loginMode === 'student'
+                  ? 'bg-primary-600 text-white shadow-glow'
+                  : 'text-white/60 hover:text-white'
+                }`}
+            >
+              <Users size={16} />
+              Student
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => handleModeChange('admin')}
+              whileTap={{ scale: 0.98 }}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-2 ${loginMode === 'admin'
+                  ? 'bg-primary-600 text-white shadow-glow'
+                  : 'text-white/60 hover:text-white'
+                }`}
+            >
+              <LogIn size={16} />
+              Admin
+            </motion.button>
+          </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
@@ -95,7 +127,7 @@ export function LoginPage() {
                 <input
                   {...register('email')}
                   type="email"
-                  placeholder="admin@college.edu"
+                  placeholder={loginMode === 'student' ? 'student@gmail.com' : 'admin@college.edu'}
                   className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
                 />
               </div>
@@ -130,9 +162,32 @@ export function LoginPage() {
               className="w-full py-3 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl text-sm transition-all shadow-glow disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
             >
               {loading && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              {loading ? 'Signing in...' : 'Sign In to Admin Portal'}
+              {loading ? 'Signing in...' : `Sign In as ${loginMode === 'admin' ? 'Admin' : 'Student'}`}
             </motion.button>
           </form>
+
+          {loginMode === 'student' && (
+            <div className="mt-6 p-4 bg-accent-teal/10 border border-accent-teal/30 rounded-lg">
+              <p className="text-xs text-white/70">
+                <span className="font-semibold text-accent-teal">Demo Account:</span> student@gmail.com
+              </p>
+            </div>
+          )}
+
+          {loginMode === 'admin' && (
+            <div className="mt-6 p-4 bg-accent-teal/10 border border-accent-teal/30 rounded-lg">
+              <p className="text-xs text-white/70 mb-2">
+                <span className="font-semibold text-accent-teal">Admin Accounts:</span>
+              </p>
+              <ul className="text-xs text-white/60 space-y-1">
+                <li>• nayak@gmail.com</li>
+                <li>• akhil@gmail.com</li>
+                <li>• jilan@gmail.com</li>
+                <li>• trinadh@gmail.com</li>
+              </ul>
+              <p className="text-xs text-white/60 mt-2">Password: admin@123</p>
+            </div>
+          )}
 
           <div className="mt-6 text-center">
             <a href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">

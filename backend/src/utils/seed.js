@@ -11,19 +11,40 @@ const seedData = async () => {
   await User.deleteMany({});
   await Notice.deleteMany({});
 
-  // Create admin user — plain passwords, the pre('save') hook hashes them
-  const admin = await User.create({
-    name: 'Admin User',
+  // Create admin users - plain passwords, the pre('save') hook hashes them
+  const admin1 = await User.create({
+    name: 'Nayak Admin',
     email: 'nayak@gmail.com',
-    password: 'nayak123',
+    password: 'admin@123',
+    role: 'admin',
+  });
+
+  await User.create({
+    name: 'Akhil Admin',
+    email: 'akhil@gmail.com',
+    password: 'admin@123',
+    role: 'admin',
+  });
+
+  await User.create({
+    name: 'Jilan Admin',
+    email: 'jilan@gmail.com',
+    password: 'admin@123',
+    role: 'admin',
+  });
+
+  await User.create({
+    name: 'Trinadh Admin',
+    email: 'trinadh@gmail.com',
+    password: 'admin@123',
     role: 'admin',
   });
 
   // Create student user
   await User.create({
     name: 'Student User',
-    email: 'student@example.com',
-    password: 'student123',
+    email: 'student@gmail.com',
+    password: 'student@123',
     role: 'student',
   });
 
@@ -38,8 +59,8 @@ const seedData = async () => {
       expiryDate: future(7),
       isPinned: true,
       emailAlert: true,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Diwali Holiday Notice',
@@ -48,8 +69,8 @@ const seedData = async () => {
       expiryDate: future(10),
       isPinned: false,
       emailAlert: true,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Urgent: Campus WiFi Maintenance',
@@ -58,8 +79,8 @@ const seedData = async () => {
       expiryDate: future(1),
       isPinned: true,
       emailAlert: true,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Final Exam Hall Tickets Available',
@@ -68,8 +89,8 @@ const seedData = async () => {
       expiryDate: future(14),
       isPinned: false,
       emailAlert: false,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Summer Vacation Schedule',
@@ -78,8 +99,8 @@ const seedData = async () => {
       expiryDate: future(20),
       isPinned: false,
       emailAlert: false,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Annual Cultural Fest Registrations Open',
@@ -88,8 +109,8 @@ const seedData = async () => {
       expiryDate: future(5),
       isPinned: false,
       emailAlert: false,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Library Timing Changes',
@@ -98,8 +119,8 @@ const seedData = async () => {
       expiryDate: future(30),
       isPinned: false,
       emailAlert: false,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Draft: Upcoming Sports Day',
@@ -109,8 +130,8 @@ const seedData = async () => {
       status: 'draft',
       isPinned: false,
       emailAlert: false,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
     {
       title: 'Scheduled: Semester Results',
@@ -121,16 +142,16 @@ const seedData = async () => {
       scheduledAt: future(2),
       isPinned: false,
       emailAlert: true,
-      author: admin.name,
-      authorId: admin._id,
+      author: admin1.name,
+      authorId: admin1._id,
     },
   ];
 
   await Notice.insertMany(notices);
 
   console.log('✅ Database seeded successfully!');
-  console.log('Admin credentials:   admin@college.edu / admin123');
-  console.log('Student credentials: student@college.edu / student123');
+  console.log('Admin credentials: nayak@gmail.com, akhil@gmail.com, jilan@gmail.com, trinadh@gmail.com / admin@123');
+  console.log('Student credentials: student@gmail.com / student@123');
   process.exit(0);
 };
 
