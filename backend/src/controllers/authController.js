@@ -27,6 +27,7 @@ const register = asyncHandler(async (req, res) => {
 // @access  Public
 const login = asyncHandler(async (req, res) => {
   const { email, password, mode } = req.body;
+  const normalizedEmail = email?.toLowerCase();
 
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Email and password are required.' });
@@ -43,7 +44,7 @@ const login = asyncHandler(async (req, res) => {
   // If admin login attempt
   if (mode === 'admin') {
     // Check if email is in allowed admin list
-    if (!allowedAdminEmails.includes(email.toLowerCase())) {
+    if (!allowedAdminEmails.includes(normalizedEmail)) {
       return res.status(401).json({ success: false, message: 'Invalid credentials. This email is not authorized as admin.' });
     }
 
@@ -53,13 +54,13 @@ const login = asyncHandler(async (req, res) => {
     }
 
     // Check if user exists in database
-    let user = await User.findOne({ email: email.toLowerCase() });
+    let user = await User.findOne({ email: normalizedEmail });
 
     // If user doesn't exist, create them as admin
     if (!user) {
       user = await User.create({
         name: email.split('@')[0],
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         password: password,
         role: 'admin'
       });
@@ -79,12 +80,26 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
-  // Student login - default behavior
-  // Allow only student@gmail.com for demo, or use any registered student
-  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  // Student login
+  let user = await User.findOne({ email: normalizedEmail }).select('+password');
+
+  // Ensure the demo student account works even on fresh/non-seeded deployments.
+  if (!user && normalizedEmail === 'student@gmail.com' && password === 'student@123') {
+    user = await User.create({
+      name: 'Student User',
+      email: normalizedEmail,
+      password: 'student@123',
+      role: 'student',
+    });
+    user = await User.findOne({ email: normalizedEmail }).select('+password');
+  }
 
   if (!user || !user.isActive) {
     return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+  }
+
+  if (user.role !== 'student') {
+    return res.status(401).json({ success: false, message: 'Please use Admin mode for admin accounts.' });
   }
 
   const isMatch = await user.comparePassword(password);

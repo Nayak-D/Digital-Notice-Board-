@@ -23,6 +23,7 @@ export const useAuthStore = create<AuthStore>()(
       clearAuth: () => {
         localStorage.removeItem('notice_token');
         localStorage.removeItem('notice_user');
+        localStorage.removeItem('notice_auth');
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function LoginPage() {
-  const { setAuth, isAuthenticated } = useAuthStore();
+  const { user, setAuth, isAuthenticated, clearAuth } = useAuthStore();
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,53 @@ export function LoginPage() {
     defaultValues: { email: '', password: '' },
   });
 
-  if (isAuthenticated) return <Navigate to="/admin" replace />;
+  // If already authenticated, show a button to logout and switch mode
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-navy-950 via-navy-900 to-primary-950 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-600/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent-teal/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-800/10 rounded-full blur-3xl" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative w-full max-w-md"
+        >
+          <div className="bg-white/[0.07] backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl text-center">
+            <h2 className="text-xl font-bold text-white mb-2">Already Logged In</h2>
+            <p className="text-white/60 text-sm mb-6">
+              You are currently logged in as <span className="font-semibold text-accent-teal">{user.name}</span> ({user.role})
+            </p>
+
+            <div className="space-y-3">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  clearAuth();
+                  reset();
+                }}
+                className="w-full py-3 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl text-sm transition-all shadow-glow"
+              >
+                Logout & Switch Account
+              </motion.button>
+
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate(user.role === 'admin' ? '/admin' : '/')}
+                className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-sm transition-all border border-white/10"
+              >
+                Continue as {user.role === 'admin' ? 'Admin' : 'Student'}
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   const handleModeChange = (mode: 'student' | 'admin') => {
     setLoginMode(mode);
@@ -98,8 +144,8 @@ export function LoginPage() {
               onClick={() => handleModeChange('student')}
               whileTap={{ scale: 0.98 }}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-2 ${loginMode === 'student'
-                  ? 'bg-primary-600 text-white shadow-glow'
-                  : 'text-white/60 hover:text-white'
+                ? 'bg-primary-600 text-white shadow-glow'
+                : 'text-white/60 hover:text-white'
                 }`}
             >
               <Users size={16} />
@@ -110,8 +156,8 @@ export function LoginPage() {
               onClick={() => handleModeChange('admin')}
               whileTap={{ scale: 0.98 }}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-2 ${loginMode === 'admin'
-                  ? 'bg-primary-600 text-white shadow-glow'
-                  : 'text-white/60 hover:text-white'
+                ? 'bg-primary-600 text-white shadow-glow'
+                : 'text-white/60 hover:text-white'
                 }`}
             >
               <LogIn size={16} />
@@ -171,6 +217,7 @@ export function LoginPage() {
               <p className="text-xs text-white/70">
                 <span className="font-semibold text-accent-teal">Demo Account:</span> student@gmail.com
               </p>
+              <p className="text-xs text-white/60 mt-2">Password: student@123</p>
             </div>
           )}
 

@@ -6,7 +6,7 @@ import { useThemeStore } from '@/store/themeStore';
 // Layouts
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { StudentLayout } from '@/layouts/StudentLayout';
-import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
+import { ProtectedRoute, StudentRoute } from '@/features/auth/ProtectedRoute';
 
 // Lazy pages
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })));
@@ -40,9 +40,11 @@ function AppContent() {
           {/* Public */}
           <Route path="/login" element={<LoginPage />} />
 
-          {/* Student feed */}
-          <Route path="/" element={<StudentLayout />}>
-            <Route index element={<StudentFeedPage />} />
+          {/* Student feed — protected */}
+          <Route element={<StudentRoute />}>
+            <Route path="/" element={<StudentLayout />}>
+              <Route index element={<StudentFeedPage />} />
+            </Route>
           </Route>
 
           {/* Admin — protected */}

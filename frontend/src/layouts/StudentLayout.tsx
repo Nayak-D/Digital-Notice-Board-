@@ -32,12 +32,6 @@ export function StudentLayout() {
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <a
-              href="/login"
-              className="px-3 py-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors"
-            >
-              Admin Login
-            </a>
           </div>
         </div>
       </header>
